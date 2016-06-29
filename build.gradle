@@ -1,0 +1,36 @@
+plugins {
+    id 'com.gradle.plugin-publish' version '0.9.2'
+    id 'eclipse'
+    id 'groovy'
+    id 'java-gradle-plugin'
+    id 'signing'
+    id 'maven'
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.14'
+}
+
+group 'com.cinchapi.gradle.concourse.plugin'
+version '1.0.2'
+
+task sourceJar(type: Jar) {
+    from sourceSets.main.allSource
+    classifier 'sources'
+}
+
+pluginBundle {
+    website = 'https://github.com/cinchapi/gradle-concourse-plugin'
+    vcsUrl = 'https://github.com/cinchapi/gradle-concourse-plugin'
+    description = 'A gradle plugin to bundle Concourse plugins.'
+
+    plugins {
+        bundlePlugin {
+            id = 'com.cinchapi.concourse-plugin'
+            displayName = 'Concourse Plugin Bundle'
+            description = 'A gradle plugin to bundle Concourse plugins.'
+            tags = ['concourse', 'distribution']
+            version = version
+        }
+    }
+}
