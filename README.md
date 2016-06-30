@@ -1,6 +1,6 @@
 # gradle-concourse-plugin
 This plugin takes a project with Concourse plugins and packages them into a
-bundle that can be installed with the `concourse plugins install <file>`
+bundle that can be installed with the `concourse plugins --install <file>`
 command.
 
 In particular, this plugin packages a project into a common bundle structure

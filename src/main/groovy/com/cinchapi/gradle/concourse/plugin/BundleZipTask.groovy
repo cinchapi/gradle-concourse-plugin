@@ -16,6 +16,8 @@
 package com.cinchapi.gradle.concourse.plugin
 
 import org.gradle.api.tasks.bundling.Zip
+import java.io.File
+import groovy.json.JsonBuilder
 
 /**
  * A Gradle task that creates a plugin bundle in zip format.
@@ -66,6 +68,21 @@ class BundleZipTask extends Zip {
     public void configure(BundleExtension ext){
         String bundleRootDir = ext.bundleName + '-' + String.valueOf(project.version)
 
+        // Create manifest.json which contains metadata about the bundle
+        JsonBuilder json = new JsonBuilder()
+        def root = json {
+            bundleName ext.bundleName
+            bundleVersion project.version
+        }
+        doFirst {
+            new File(getTemporaryDir(), 'manifest.json').text = json.toString()
+        }
+
+        // Copy manifest.json to the root of the bundle
+        into("${bundleRootDir}"){
+            from(getTemporaryDir())
+        }
+
         // Copy all dependencies into the "lib" directory of the bundle
         into("${bundleRootDir}/lib") {
             from(project.tasks.jar.outputs.files)
@@ -76,8 +93,6 @@ class BundleZipTask extends Zip {
         into("${bundleRootDir}/bin") {
             from("${project.projectDir}/scripts")
         }
-
-        // TODO Copy over the plugin.prefs file
     }
 
 
