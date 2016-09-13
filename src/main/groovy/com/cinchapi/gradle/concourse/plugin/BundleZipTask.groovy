@@ -93,6 +93,11 @@ class BundleZipTask extends Zip {
         into("${bundleRootDir}/bin") {
             from("${project.projectDir}/scripts")
         }
+
+        // Copy all the files from the "conf" directory of the project to bundle
+        into("${bundleRootDir}/conf"){
+            from("${project.projectDir}/conf")
+        }
     }
 
 
