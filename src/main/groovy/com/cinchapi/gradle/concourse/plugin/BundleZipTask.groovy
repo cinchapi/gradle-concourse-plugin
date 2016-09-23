@@ -98,6 +98,11 @@ class BundleZipTask extends Zip {
         into("${bundleRootDir}/conf"){
             from("${project.projectDir}/conf")
         }
+
+        // Copy all the files from the "data" directory of the project to bundle
+        into("${bundleRootDir}/data"){
+            from("${project.projectDir}/data")
+        }
     }
 
 
