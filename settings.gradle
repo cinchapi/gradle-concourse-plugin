@@ -13,28 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.cinchapi.gradle.concourse.plugin
 
-import org.gradle.api.provider.Property
+rootProject.name = 'gradle-concourse-plugin'
 
-/**
- * Configuration extension for the Concourse plugin bundle.
- *
- * <p>
- * Declare this extension in build.gradle:
- * <pre>
- * bundle {
- *     bundleName = "my-plugin-name"
- * }
- * </pre>
- *
- * @author Jeff Nelson
- */
-abstract class BundleExtension {
-
-    /**
-     * The bundle name used when naming the resulting artifacts.
-     */
-    abstract Property<String> getBundleName()
-
-}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Cinchapi Inc.
+ * Copyright (c) 2016-2024 Cinchapi Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,34 +17,54 @@ package com.cinchapi.gradle.concourse.plugin
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.Task
 
 /**
- * A Gradle plugin that can be used for managing Concourse Plugin projects.
+ * A Gradle plugin for managing Concourse Plugin projects.
  *
+ * <p>
  * Apply the plugin using standard Gradle convention:
+ * <pre>
  * plugins {
- * 	id 'com.cinchapi.concourse-plugin'
+ *     id 'com.cinchapi.concourse-plugin'
  * }
+ * </pre>
+ *
+ * <p>
+ * Configure the plugin bundle:
+ * <pre>
+ * bundle {
+ *     bundleName = "my-plugin"
+ * }
+ * </pre>
+ *
+ * @author Jeff Nelson
  */
 class ConcoursePluginPlugin implements Plugin<Project> {
 
-    private static final String GROUP_NAME = "Distribution"
-
+    @Override
     void apply(Project project) {
-        project.plugins.apply('java') //ensure that the java plugin is applied
+        // Ensure that the java plugin is applied
+        project.plugins.apply('java')
 
-        BundleExtension ext = project.extensions.create('bundle', BundleExtension)
+        // Create the bundle extension for configuration
+        BundleExtension ext = project.extensions.create(
+                'bundle',
+                BundleExtension
+        )
 
-        BundleZipTask bundleZip = project.tasks.create('bundleZip', BundleZipTask, {
-            group = GROUP_NAME
-            description = "Creates a compressed zip file that contains required runtime resources for all the plugins in the bundle"
-            bundleExtension ext
-        })
-
-        project.afterEvaluate {
-            bundleZip.configure(ext)
+        // Register the bundleZip task
+        project.tasks.register('bundleZip', BundleZipTask) { task ->
+            task.bundleName.convention(ext.bundleName)
+            task.dependsOn(project.tasks.named('jar'))
         }
 
+        // Configure the task after project evaluation when all properties
+        // are available
+        project.afterEvaluate {
+            project.tasks.named('bundleZip', BundleZipTask).configure { task ->
+                task.configure(ext)
+            }
+        }
     }
+
 }

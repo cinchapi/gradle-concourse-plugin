@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Cinchapi Inc.
+ * Copyright (c) 2016-2024 Cinchapi Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,78 +15,73 @@
  */
 package com.cinchapi.gradle.concourse.plugin
 
-import org.gradle.api.tasks.bundling.Zip
-import java.io.File
 import groovy.json.JsonBuilder
+import org.gradle.api.file.DuplicatesStrategy
+import org.gradle.api.provider.Property
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.Optional
+import org.gradle.api.tasks.bundling.Zip
+
+import javax.inject.Inject
 
 /**
  * A Gradle task that creates a plugin bundle in zip format.
- * Invokable using ./gradlew bundleZip
+ *
+ * <p>
+ * Invokable using {@code ./gradlew bundleZip}
  *
  * @author Jeff Nelson
  */
-class BundleZipTask extends Zip {
+abstract class BundleZipTask extends Zip {
 
-    public BundleZipTask() {
+    /**
+     * The name of the bundle.
+     *
+     * @return the bundle name property
+     */
+    @Input
+    @Optional
+    abstract Property<String> getBundleName()
 
+    @Inject
+    BundleZipTask() {
+        group = 'Distribution'
+        description = 'Creates a compressed zip file containing required ' +
+                'runtime resources for all the plugins in the bundle'
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     }
 
     /**
-     * A pointer to the {@link BundleExtension} that configures the task.
+     * Configure the task with the bundle extension settings.
+     *
+     * @param ext the {@link BundleExtension} containing configuration
      */
-    private BundleExtension bundleExtension
+    void configure(BundleExtension ext) {
+        String name = ext.bundleName.getOrElse(project.name)
+        String version = String.valueOf(project.version)
+        String bundleRootDir = "${name}-${version}"
 
-    /**
-     * Set the {@link #bundleExtension}.
-     * @param ext the {@link BundleExtension} to set
-     */
-    public void bundleExtension(BundleExtension ext) {
-        this.bundleExtension = ext
-    }
-
-    /**
-     * Return the {@link #bundleExtension}.
-     * @return the {@link BundleExtension} that configures this task
-     */
-    public BundleExtension getBundleExtension() {
-        return this.bundleExtension;
-    }
-
-    /**
-     * Return the proper base name for the task.
-     * @return the base name
-     */
-    public String getBaseName() {
-        setBaseName(bundleExtension.bundleName)
-        return super.getBaseName()
-    }
-
-    /**
-     * Execute the task logic.
-     * @param ext the extension that configures this task with preferences
-     */
-    public void configure(BundleExtension ext){
-        String bundleRootDir = ext.bundleName + '-' + String.valueOf(project.version)
+        archiveBaseName.set(name)
 
         // Create manifest.json which contains metadata about the bundle
         JsonBuilder json = new JsonBuilder()
-        def root = json {
-            bundleName ext.bundleName
-            bundleVersion project.version
+        json {
+            bundleName name
+            bundleVersion version
         }
         doFirst {
-            new File(getTemporaryDir(), 'manifest.json').text = json.toString()
+            new File(temporaryDir, 'manifest.json').text = json.toString()
         }
 
         // Copy manifest.json to the root of the bundle
-        into("${bundleRootDir}"){
-            from(getTemporaryDir())
+        into(bundleRootDir) {
+            from(temporaryDir)
         }
 
         // Copy all dependencies into the "lib" directory of the bundle
         into("${bundleRootDir}/lib") {
-            from(project.tasks.jar.outputs.files)
-            from(project.configurations.runtime)
+            from(project.tasks.named('jar'))
+            from(project.configurations.named('runtimeClasspath'))
         }
 
         // Copy all the scripts into the "bin" directory of the bundle
@@ -94,16 +89,15 @@ class BundleZipTask extends Zip {
             from("${project.projectDir}/scripts")
         }
 
-        // Copy all the files from the "conf" directory of the project to bundle
-        into("${bundleRootDir}/conf"){
+        // Copy all the files from the "conf" directory of the project
+        into("${bundleRootDir}/conf") {
             from("${project.projectDir}/conf")
         }
 
-        // Copy all the files from the "data" directory of the project to bundle
-        into("${bundleRootDir}/data"){
+        // Copy all the files from the "data" directory of the project
+        into("${bundleRootDir}/data") {
             from("${project.projectDir}/data")
         }
     }
-
 
 }
