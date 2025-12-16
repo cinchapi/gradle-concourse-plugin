@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2013-2016 Cinchapi Inc.
- * 
+ * Copyright (c) 2013-2024 Cinchapi Inc.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,19 +20,20 @@ import org.gradle.testfixtures.ProjectBuilder;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.cinchapi.gradle.concourse.plugin.ConcoursePluginPlugin;
+
 /**
- * 
- * 
+ * Unit tests for {@link ConcoursePluginPlugin}.
+ *
  * @author Jeff Nelson
  */
 public class ConcoursePluginPluginTest {
 
     @Test
-    public void pluginAddsConcoursePluginDistTask() {
+    public void pluginAddsBundleZipTask() {
         Project project = ProjectBuilder.builder().build();
         project.getPluginManager().apply(ConcoursePluginPlugin.class);
-        Assert.assertNotNull(project.getTasks().getByName(
-                "concourse-plugin-dist"));
+        Assert.assertNotNull(project.getTasks().findByName("bundleZip"));
     }
 
 }
